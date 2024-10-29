@@ -1,3 +1,4 @@
 ## 效果如图
 
-<img width="1730" alt="iShot_2024-10-30_01 30 16" src="https://github.com/user-attachments/assets/2efe45fb-d47e-494c-aa34-0a8ba9936965">
+<img width="1214" alt="iShot_2024-10-30_01 35 36" src="https://github.com/user-attachments/assets/a97dd9ec-4e88-4424-9f61-c7d10118a71a">
+
