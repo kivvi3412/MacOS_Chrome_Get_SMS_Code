@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "自动填写短信验证码",
+  "name": "SMS Auto Fill",
   "version": "1.0",
-  "description": "自动获取并填写短信中的验证码",
+  "description": "Auto fill SMS verification code",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
   "permissions": [
     "scripting"
   ],
@@ -16,7 +21,8 @@
       ],
       "js": [
         "content.js"
-      ]
+      ],
+      "all_frames": true
     }
   ],
   "background": {

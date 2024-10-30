@@ -314,20 +314,78 @@
     }
 
     /**
-     * 监听页面中所有输入框的聚焦事件, 处理验证码自动填写。
+     * 添加焦点事件监听器, 处理验证码自动填写。
+     * @param {HTMLInputElement} input - 输入框元素。
      */
-    document.addEventListener('focusin', (event) => {
-        try {
-            if (
-                event.target.tagName.toLowerCase() === 'input' &&
-                ['text', 'tel', 'number', 'password'].includes(event.target.type)
-            ) {
-                onFocus(event);
-            }
-        } catch (error) {
-            console.error('Error in focusin event handler:', error);
+    function addFocusListener(input) {
+        input.addEventListener('focusin', onFocus, true); // 在捕获阶段监听事件
+    }
+
+    /**
+     * 处理新增的元素, 添加事件监听器。
+     * @param {Element} element - 新增的元素。
+     */
+    function processNewElement(element) {
+        // 添加事件监听器
+        if (element.tagName && element.tagName.toLowerCase() === 'input') {
+            addFocusListener(element);
         }
-    });
+
+        // 处理 Shadow DOM 中的元素
+        traverseShadowRoots(element);
+
+        // 递归处理子元素
+        if (element.children && element.children.length > 0) {
+            Array.from(element.children).forEach(child => processNewElement(child));
+        }
+    }
+
+    /**
+     * 遍历 Shadow DOM, 添加事件监听器。
+     * @param {Element} node - 节点元素。
+     */
+    function traverseShadowRoots(node) {
+        if (node.shadowRoot) {
+            // 对 Shadow Root 内的元素添加监听器
+            node.shadowRoot.querySelectorAll('input').forEach(input => {
+                addFocusListener(input);
+            });
+            // 继续遍历 Shadow Root 内的子节点
+            Array.from(node.shadowRoot.children).forEach(child => traverseShadowRoots(child));
+        }
+        // 遍历子节点
+        Array.from(node.children || []).forEach(child => traverseShadowRoots(child));
+    }
+
+    /**
+     * 初始化函数, 添加事件监听器和观察者。
+     */
+    function init() {
+        // 初始遍历页面上的所有输入框, 添加事件监听器
+        document.querySelectorAll('input').forEach(input => {
+            addFocusListener(input);
+        });
+
+        // 遍历 Shadow DOM
+        traverseShadowRoots(document.body);
+
+        // 使用 MutationObserver 监听 DOM 变化
+        const observer = new MutationObserver((mutationsList, observer) => {
+            for (const mutation of mutationsList) {
+                // 遍历新增的节点
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // 处理新增的元素
+                        processNewElement(node);
+                    }
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // 调用初始化函数
+    init();
 
     /**
      * 在页面卸载时, 清理资源, 移除弹窗和样式。
