@@ -18,8 +18,6 @@
    - 打开右上角的 “开发者模式” 开关。
    - 点击左上角的 “加载已解压的扩展程序” 。
    - 选择项目中的 chrome-extension 文件夹
-- 如果没有Go环境的 Apple Silicon 可以直接使用二进制文件
-- `sudo mv get_message_code_server /opt/sms/`
 
 ## 效果如图
 
