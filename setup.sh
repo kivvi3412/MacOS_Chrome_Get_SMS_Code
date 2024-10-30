@@ -1,20 +1,26 @@
 #!/bin/bash
 
-# 检查是否安装了Go环境
-if ! command -v go &> /dev/null
-then
-    echo "未找到Go语言环境, 请先安装Go语言环境后再尝试。"
-    exit
-fi
+# 检查是否为 Apple Silicon 处理器
+IS_APPLE_SILICON=$(uname -m)
 
 # 创建 /opt/sms 目录
 sudo mkdir -p /opt/sms
 
-# 编译 Go 应用
-go build -o get_message_code_server get_message_code_server.go
-
-# 将可执行文件移动到 /opt/sms
-sudo mv get_message_code_server /opt/sms/
+if [ "$IS_APPLE_SILICON" = "arm64" ]; then
+    # 如果是 Apple Silicon 处理器, 直接复制已编译的可执行文件
+    sudo cp get_message_code_server /opt/sms/
+else
+    # 检查是否安装了 Go 环境
+    if ! command -v go &> /dev/null
+    then
+        echo "未找到 Go 语言环境, 请先安装 Go 语言环境后再尝试。"
+        exit
+    fi
+    # 编译 Go 应用
+    go build -o get_message_code_server get_message_code_server.go
+    # 将可执行文件移动到 /opt/sms
+    sudo mv get_message_code_server /opt/sms/
+fi
 
 # 赋予执行权限
 sudo chmod +x /opt/sms/get_message_code_server

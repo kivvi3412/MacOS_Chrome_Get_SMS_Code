@@ -20,7 +20,24 @@
    - 选择项目中的 chrome-extension 文件夹
 - 如果没有Go环境的 Apple Silicon 可以直接使用二进制文件
 - `sudo mv get_message_code_server /opt/sms/`
+
 ## 效果如图
 
 ![](https://github.com/user-attachments/assets/a97dd9ec-4e88-4424-9f61-c7d10118a71a)
 
+## 卸载方法
+
+如果您不再需要使用该工具, 可以按照以下步骤卸载:
+
+1. **卸载服务**
+
+   ```bash
+   launchctl unload "$HOME/Library/LaunchAgents/com.getmessagecode.launcher.plist"
+   rm "$HOME/Library/LaunchAgents/com.getmessagecode.launcher.plist"
+   sudo rm -rf /opt/sms
+   ```
+
+2. **移除 Chrome 扩展程序**
+
+    - 打开 `chrome://extensions/`。
+    - 找到 **SMS Auto Fill** 扩展, 点击 **“移除”** 按钮。
