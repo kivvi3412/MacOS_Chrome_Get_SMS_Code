@@ -1,17 +1,18 @@
 
 ## 介绍
 
-本项目是一个用于 macOS 的 SMS 验证码自动填写工具。它通过监听系统的 Messages 应用, 获取最新的验证码短信, 并在网页上自动填写验证码, 简化用户的操作。
+- 一个用于 macOS 的 SMS 验证码自动填写工具
+- 通过监听系统的 Messages 应用, 获取最新的验证码短信, 并在网页上自动填写验证码, 简化用户操作
 
 ## 部署步骤
 1. 脚本部署
     ```bash
-    chmod +x setup.sh
-    ./setup.sh
+    chmod +x setup.sh && ./setup.sh
     ```
 2. 配置
+    - 在 `setting > Privacy & Security > 拉到底` 点击 **仍要打开** `get_message_code_server`
     - 在 `setting > Privacy & Security > Full Disk Access` 给 `/opt/sms/get_message_code_server` 全盘访问权限
-    - 在 `setting > general > Login Items & Extensions` 打开 `get_message_code_server` 服务
+    - 在 `setting > general > Login Items & Extensions` 重启 `get_message_code_server` 服务
 3. 安装Chrome Extension  
    - 安装 Chrome 扩展程序
    - 打开 Chrome 浏览器, 输入 chrome://extensions/ 进入扩展程序管理页面。
@@ -28,7 +29,6 @@
 如果您不再需要使用该工具, 可以按照以下步骤卸载:
 
 1. **卸载服务**
-
    ```bash
    launchctl unload "$HOME/Library/LaunchAgents/com.getmessagecode.launcher.plist"
    rm "$HOME/Library/LaunchAgents/com.getmessagecode.launcher.plist"
@@ -36,6 +36,5 @@
    ```
 
 2. **移除 Chrome 扩展程序**
-
     - 打开 `chrome://extensions/`。
     - 找到 **SMS Auto Fill** 扩展, 点击 **“移除”** 按钮。
