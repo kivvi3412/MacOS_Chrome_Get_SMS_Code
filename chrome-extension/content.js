@@ -390,7 +390,7 @@
     /**
      * 在页面卸载时, 清理资源, 移除弹窗和样式。
      */
-    window.addEventListener('unload', () => {
+    window.addEventListener('pagehide', () => {
         stopPolling();
         removePopup();
         if (styleElement && styleElement.parentNode) {

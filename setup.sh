@@ -61,3 +61,5 @@ launchctl unload "$PLIST_FILE" &> /dev/null
 launchctl load "$PLIST_FILE"
 
 echo "部署完成, 服务已启动。"
+echo "请在 setting > Privacy & Security > Full Disk Access 给 /opt/sms/get_message_code_server 全盘访问权限"
+echo "在 setting > general > Login Items & Extensions 重新启动 get_message_code_server 服务"
