@@ -11,7 +11,6 @@
     let usedCode = null;             // 已使用的验证码
     let codeUsedTimestamp = null;    // 验证码使用的时间戳
     let popup = null;                // 弹窗元素
-    let styleElement = null;         // 样式元素
     const CODE_REUSE_INTERVAL = 60 * 1000; // 1分钟, 单位为毫秒
 
     // 定义识别验证码输入框的关键字列表
@@ -38,7 +37,7 @@
             pollingActive = true;
             pollingIntervalId = setInterval(() => {
                 // 向后台脚本发送消息, 获取验证码
-                chrome.runtime.sendMessage({ action: 'getCode' }, (response) => {
+                chrome.runtime.sendMessage({action: 'getCode'}, (response) => {
                     if (response && response.success) {
                         const code = response.code;
                         // 检查是否是已使用的验证码且在1分钟内
@@ -177,30 +176,60 @@
      */
     function showPopup(input, code) {
         if (!input || !input.isConnected) return;
+
         // 移除现有弹窗 (如果存在) 。
         removePopup();
 
-        // 创建弹窗元素。
+        // 创建自定义元素作为弹窗容器。
         popup = document.createElement('div');
-        popup.className = 'sms-code-popup';
-        popup.innerHTML = `
-          <div class="sms-code-text">
-            Fill Code: <span class="sms-code">${code}</span>
-          </div>
-        `;
+        popup.style.position = 'absolute';
+        popup.style.zIndex = 9999;
 
-        // 添加样式。
-        addStyles();
+        // 创建 Shadow Root。
+        const shadow = popup.attachShadow({mode: 'closed'});
+
+        // 在 Shadow DOM 中创建弹窗内容。
+        shadow.innerHTML = `
+      <div class="sms-code-popup">
+        <div class="sms-code-text">
+          Fill Code: <span class="sms-code">${code}</span>
+        </div>
+      </div>
+    `;
+
+        // 添加样式到 Shadow DOM 内部。
+        const style = document.createElement('style');
+        style.textContent = `
+      .sms-code-popup {
+        background-color: #4a4a4a;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 10px;
+        display: inline-block;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .sms-code-popup .sms-code-text {
+        display: flex;
+        align-items: center;
+      }
+      .sms-code-popup .sms-code {
+        font-weight: bold;
+        margin-left: 5px;
+      }
+    `;
+        shadow.prepend(style);
 
         // 定位弹窗位置。
         positionPopup(input);
 
         // 点击弹窗时, 填充验证码并移除弹窗。
-        popup.addEventListener('mousedown', (event) => {
+        shadow.querySelector('.sms-code-popup').addEventListener('mousedown', (event) => {
             event.preventDefault(); // 防止输入框失去焦点。
             fillCodeIntoInput(input, code);
             removePopup();
-            // 记录已使用的验证码和时间戳
+
+            // 记录已使用的验证码和时间戳。
             usedCode = code;
             codeUsedTimestamp = Date.now();
         });
@@ -216,22 +245,45 @@
      */
     function showErrorPopup(input, message) {
         if (!input || !input.isConnected) return;
+
         // 移除现有弹窗 (如果存在) 。
         removePopup();
 
-        // 创建错误弹窗元素。
+        // 创建自定义元素作为弹窗容器。
         popup = document.createElement('div');
-        popup.className = 'sms-code-popup error';
-        popup.innerHTML = `<div class="sms-code-text">${message}</div>`;
+        popup.style.position = 'absolute';
+        popup.style.zIndex = 9999;
 
-        // 添加样式。
-        addStyles();
+        // 创建 Shadow Root。
+        const shadow = popup.attachShadow({mode: 'closed'});
+
+        // 在 Shadow DOM 中创建弹窗内容。
+        shadow.innerHTML = `
+      <div class="sms-code-popup error">
+        <div class="sms-code-text">${message}</div>
+      </div>
+    `;
+
+        // 添加样式到 Shadow DOM 内部。
+        const style = document.createElement('style');
+        style.textContent = `
+      .sms-code-popup {
+        background-color: #ff4d4d;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 10px;
+        display: inline-block;
+        cursor: pointer;
+        font-size: 14px;
+      }
+    `;
+        shadow.prepend(style);
 
         // 定位弹窗位置。
         positionPopup(input);
 
         // 点击弹窗时, 移除弹窗。
-        popup.addEventListener('mousedown', (event) => {
+        shadow.querySelector('.sms-code-popup').addEventListener('mousedown', (event) => {
             event.preventDefault(); // 防止输入框失去焦点。
             removePopup();
         });
@@ -251,47 +303,11 @@
     }
 
     /**
-     * 添加弹窗所需的样式。
-     */
-    function addStyles() {
-        if (styleElement) {
-            return; // 如果样式已添加, 直接返回。
-        }
-        styleElement = document.createElement('style');
-        styleElement.textContent = `
-          .sms-code-popup {
-            background-color: #4a4a4a;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 10px;
-            display: inline-block;
-            cursor: pointer;
-            font-size: 14px;
-            position: absolute;
-            z-index: 9999;
-          }
-          .sms-code-popup.error {
-            background-color: #ff4d4d;
-          }
-          .sms-code-popup .sms-code-text {
-            display: flex;
-            align-items: center;
-          }
-          .sms-code-popup .sms-code {
-            font-weight: bold;
-            margin-left: 5px;
-          }
-        `;
-        document.head.appendChild(styleElement);
-    }
-
-    /**
      * 定位弹窗到输入框下方。
      * @param {HTMLInputElement} input - 目标输入框元素。
      */
     function positionPopup(input) {
         if (!input || !input.isConnected || !popup) return;
-
         const rect = input.getBoundingClientRect();
         popup.style.top = `${window.scrollY + rect.bottom + 5}px`;
         popup.style.left = `${window.scrollX + rect.left}px`;
@@ -307,9 +323,9 @@
 
         input.value = code;
         // 触发输入事件, 确保页面的其他逻辑可以检测到。
-        const inputEvent = new Event('input', { bubbles: true });
+        const inputEvent = new Event('input', {bubbles: true});
         input.dispatchEvent(inputEvent);
-        const changeEvent = new Event('change', { bubbles: true });
+        const changeEvent = new Event('change', {bubbles: true});
         input.dispatchEvent(changeEvent);
     }
 
@@ -381,7 +397,7 @@
                 }
             }
         });
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body, {childList: true, subtree: true});
     }
 
     // 调用初始化函数
@@ -393,9 +409,5 @@
     window.addEventListener('pagehide', () => {
         stopPolling();
         removePopup();
-        if (styleElement && styleElement.parentNode) {
-            styleElement.parentNode.removeChild(styleElement);
-            styleElement = null;
-        }
     });
 })();
